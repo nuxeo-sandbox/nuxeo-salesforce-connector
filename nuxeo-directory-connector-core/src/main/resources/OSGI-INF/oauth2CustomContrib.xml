@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.directory.connector.oauth.custom.contrib">
+	<require>org.nuxeo.ecm.platform.oauth.schemaContribs</require>
+	<require>org.nuxeo.ecm.platform.oauth2.providers.OAuth2ServiceProviderRegistry</require>
+  	<extension point="schema" target="org.nuxeo.ecm.core.schema.TypeService">
+    	<schema name="oauth2Token" src="schemas/oauth2token.xsd" override="true"/>
+  	</extension>
+  	
+  	<extension target="org.nuxeo.ecm.platform.oauth2.providers.OAuth2ServiceProviderRegistry" point="providers">
+		<provider>
+	      <name>Salesforce</name>
+	      <description>Salesforce Provider</description>
+	      <class>org.nuxeo.oauth2.SalesforceOAuth2ServiceProvider</class>
+	      <tokenServerURL>https://test.salesforce.com/services/oauth2/token</tokenServerURL>
+	      <authorizationServerURL>https://test.salesforce.com/services/oauth2/authorize?response_type=code</authorizationServerURL>
+	    </provider>
+	</extension>
+  	
+</component>

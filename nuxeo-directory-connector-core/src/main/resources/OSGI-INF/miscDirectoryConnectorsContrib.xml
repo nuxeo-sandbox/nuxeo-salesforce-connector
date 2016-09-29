@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<component name="org.nuxeo.directory.connector.jsontesting">
+  <extension point="schema" target="org.nuxeo.ecm.core.schema.TypeService">
+    <schema name="vocabulary" src="schemas/vocabulary.xsd"/>
+  </extension>
+  <extension
+    target="org.nuxeo.directory.connector.ConnectorBasedDirectoryFactory"
+    point="directories">
+  	<directory name="Salesforce_Organization"
+      class="org.nuxeo.directory.connector.json.salesforce.SalesforceInMemoryConnector">
+      <idField>sku</idField>
+      <schema>vocabulary</schema>
+      <cacheTimeout>0</cacheTimeout>
+      <parameters>
+        <parameter name="url">/services/data/v20.0/query/?q=SELECT+name+from+Account</parameter>
+      </parameters>
+      <mapping>
+       <map field="label">product_name</map>
+       <map field="id">sku</map>
+      </mapping>
+    </directory>  
+  </extension>
+</component>

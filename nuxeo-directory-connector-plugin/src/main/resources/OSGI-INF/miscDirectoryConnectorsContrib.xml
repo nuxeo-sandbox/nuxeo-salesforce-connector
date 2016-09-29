@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.directory.connector.jsontesting">
+
+  <extension point="schema" target="org.nuxeo.ecm.core.schema.TypeService">
+    <schema name="vocabulary" src="schemas/vocabulary.xsd"/>
+  </extension>
+  <extension
+    target="org.nuxeo.directory.connector.ConnectorBasedDirectoryFactory"
+    point="directories">
+  	<directory name="Akeneo_Product"
+      class="org.nuxeo.directory.connector.json.akeneo.AkeneoInMemoryConnector">
+      <idField>sku</idField>
+      <schema>vocabulary</schema>
+      <parameters>
+        <parameter name="url">http://mchp206a.global-intra.net/api/products.json?attributes=1&amp;object_type=product</parameter>
+        <parameter name="proxyHost">172.28.12.5</parameter>
+        <parameter name="proxyPort">80</parameter>
+      </parameters>
+      <mapping>
+       <map field="label">product_name</map>
+       <map field="id">sku</map>
+      </mapping>
+    </directory>  
+  </extension>
+</component>
