@@ -8,5 +8,6 @@ Bundle-ClassPath: .
 Eclipse-LazyStart: true
 Nuxeo-Component: OSGI-INF/connectorbased-directory-framework.xml,
  OSGI-INF/miscDirectoryConnectorsContrib.xml,
- OSGI-INF/oauth2CustomContrib.xml
+ OSGI-INF/oauth2CustomContrib.xml,
+ OSGI-INF/suggestDirectoryEntriesContrib.xml
 Require-Bundle: org.nuxeo.ecm.directory

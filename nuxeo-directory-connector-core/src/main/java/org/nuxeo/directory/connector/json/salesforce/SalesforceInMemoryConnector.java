@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +31,15 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonNode;
 import org.nuxeo.directory.connector.ConnectorBasedDirectoryDescriptor;
 import org.nuxeo.directory.connector.json.JsonInMemoryDirectoryConnector;
@@ -59,6 +66,7 @@ public class SalesforceInMemoryConnector extends
 
     protected Log log = LogFactory.getLog(SalesforceInMemoryConnector.class);
     protected Map<String, String> mapping;
+	
     
     protected DocumentModelList query(Map<String, Serializable> filter) {
 		DirectoryService ds = (DirectoryService) Framework.getLocalService(DirectoryService.class);
@@ -81,7 +89,7 @@ public class SalesforceInMemoryConnector extends
 		}
 		return null;
     }
-
+    
     @Override
     protected JsonNode call(String url) {
  
@@ -99,33 +107,83 @@ public class SalesforceInMemoryConnector extends
 		
 		DocumentModel directory = entries.get(0);
 		String instanceUrl = (String)directory.getPropertyValue("instanceUrl");
-    	
+    	if( instanceUrl == null){
+    		instanceUrl = "https://cs86.salesforce.com";
+    	}
     	HttpGet getRequest = new HttpGet(instanceUrl+url);
-    	getRequest.addHeader("accept", "application/json");
-    	String token = getAccessToken("Administrator");
-    	getRequest.addHeader("oAuth", token);
+    	//getRequest.addHeader("accept", "application/json");
+    	String user = "Administrator";
+    	String token = getAccessToken(user);
+    	getRequest.addHeader("Authorization", "OAuth "+token);
     	HttpResponse response;
-    	StringBuffer productListBuffer = new StringBuffer();
+    	StringBuffer listBuffer = new StringBuffer();
     	
     	try {		
 			response = httpClient.execute(getRequest);
+			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {	
+				OAuth2ServiceProvider serviceProvider = Framework.getLocalService(OAuth2ServiceProviderRegistry.class).getProvider("Salesforce");
+				Credential credential = serviceProvider.loadCredential(user); 
+		        String refreshToken = credential.getAccessToken();				
+				JsonNode json = refreshToken(serviceProvider.getAuthorizationServerURL(), serviceProvider.getClientId(), serviceProvider.getClientSecret(), refreshToken);
+				//String accessToken = (String)json.get(0).get("access_token");
+			}	
+			
 		} catch (Exception e1) {
 			log.error("Error while getting response", e1);
 			return null;
 			
 		}
-
+    	
         try {
         	BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
 			String output;
 			
 			while ((output = br.readLine()) != null) {
-				productListBuffer.append(output);
+				listBuffer.append(output);
 			}
-            return getMapper().readTree(productListBuffer.toString());
+            return getMapper().readTree(listBuffer.toString());
         } catch (Exception e) {
             throw new NuxeoException("Error while reading JSON response", e);
         }
+    }
+    
+    
+    protected JsonNode refreshToken(String url, String clientId, String clientSecret, String refreshToken){
+    	StringBuffer listBuffer = new StringBuffer();
+    	CloseableHttpClient httpClient = HttpClientBuilder.create().build(); 
+    	HttpPost postRequest = new HttpPost(url);
+    	postRequest.addHeader("accept", "application/json");
+    	List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+		urlParameters.add(new BasicNameValuePair("grant_type", "refresh_token"));
+		urlParameters.add(new BasicNameValuePair("client_id", clientId));
+		urlParameters.add(new BasicNameValuePair("client_secret", clientSecret));
+		urlParameters.add(new BasicNameValuePair("refresh_token", refreshToken));
+	
+    	try {
+    		postRequest.setEntity( new UrlEncodedFormEntity(urlParameters));
+    		HttpResponse response = httpClient.execute(postRequest);
+    		
+    		 try {
+    	        	BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+    				String output;
+    				
+    				while ((output = br.readLine()) != null) {
+    					listBuffer.append(output);
+    				}
+    	            return getMapper().readTree(listBuffer.toString());
+    	        } catch (Exception e) {
+    	            throw new NuxeoException("Error while reading JSON response", e);
+    	        }
+    		
+		} catch (UnsupportedEncodingException e) {
+			log.error("Error while getting response", e);
+		} catch (ClientProtocolException e) {
+			log.error("Error while getting response", e);
+		} catch (IOException e) {
+			log.error("Error while getting response", e);
+		}
+
+    	return null;
     }
  
     protected String getAccessToken(String user) {
@@ -145,29 +203,33 @@ public class SalesforceInMemoryConnector extends
 
     @Override
     protected JsonNode extractResult(JsonNode responseAsJson) {
-    	//log.info("get result: "+responseAsJson.get("products"));
-    	return null;
-        //return responseAsJson.get("products");
+    	//log.info("get result: "+responseAsJson.get("records"));
+    	if(responseAsJson == null){
+    		return null;
+    	}
+        return responseAsJson.get("records");
     }
     
     @Override
     protected ArrayList<HashMap<String, Object>> getJsonStream() {
+    	
         ArrayList<HashMap<String, Object>> mapList = new ArrayList<HashMap<String, Object>>();
 
         JsonNode responseAsJson = call(params.get("url"));
 
         JsonNode resultsNode = extractResult(responseAsJson);
-        return new ArrayList();
-        /*for (int i = 0; i < resultsNode.size(); i++) {
-            try {
-                Map<String, Object> map = new HashMap<String, Object>();
-                map = readAsMap(resultsNode.get(i).get("attributes"));
-                mapList.add((HashMap<String, Object>) map);
-            } catch (IOException e) {
-                log.error("Error while mapping JSON to Map", e);
-            }
+        if(resultsNode == null){
+        	return mapList;
         }
-        return mapList;*/
+        for (int i = 0; i < resultsNode.size(); i++) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            String label = resultsNode.get(i).get(params.get("label")).toString().replaceAll("\"", "");
+			map.put(params.get("label"), label);
+			String id = resultsNode.get(i).get(params.get("id")).toString().replaceAll("\"", "");
+			map.put(params.get("id"), id);
+			mapList.add((HashMap<String, Object>) map);
+        }
+        return mapList;
     }
 
     @Override
@@ -195,8 +257,8 @@ public class SalesforceInMemoryConnector extends
                 valueToFind = valueToFind.toLowerCase();
             }
         }
-        log.info("mapping ["+mapping.get("label")+"]");
-        String fieldName = mapping.get("label");
+        log.info("mapping ["+params.get("label")+"]");
+        String fieldName = params.get("label");
         // do the search
         data_loop: for (String id : getEntryIds()) {
 

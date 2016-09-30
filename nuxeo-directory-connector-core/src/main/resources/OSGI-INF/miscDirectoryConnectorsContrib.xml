@@ -9,15 +9,17 @@
     point="directories">
   	<directory name="Salesforce_Organization"
       class="org.nuxeo.directory.connector.json.salesforce.SalesforceInMemoryConnector">
-      <idField>sku</idField>
+      <idField>Id</idField>
       <schema>vocabulary</schema>
       <cacheTimeout>0</cacheTimeout>
       <parameters>
-        <parameter name="url">/services/data/v20.0/query/?q=SELECT+name+from+Account</parameter>
+        <parameter name="url">/services/data/v20.0/query/?q=SELECT+Id,Name+from+Account</parameter>
+        <parameter name="label">Name</parameter>
+        <parameter name="id">Id</parameter>
       </parameters>
       <mapping>
-       <map field="label">product_name</map>
-       <map field="id">sku</map>
+      	<map field="id">Id</map>
+      	<map field="label">Name</map>
       </mapping>
     </directory>  
   </extension>
