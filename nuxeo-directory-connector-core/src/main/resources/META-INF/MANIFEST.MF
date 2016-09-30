@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Nuxeo Directory Connector
 Bundle-SymbolicName: org.nuxeo.directory.connector;singleton:=true
-Bundle-Vendor: Nuxeo
+Bundle-Name: Nuxeo Directory Connector
 Bundle-Localization: bundle
 Bundle-ClassPath: .
-Eclipse-LazyStart: true
-Nuxeo-Component: OSGI-INF/connectorbased-directory-framework.xml,
- OSGI-INF/miscDirectoryConnectorsContrib.xml,
- OSGI-INF/oauth2CustomContrib.xml,
- OSGI-INF/suggestDirectoryEntriesContrib.xml
 Require-Bundle: org.nuxeo.ecm.directory
+Bundle-ManifestVersion: 2
+Bundle-Vendor: Nuxeo
+Nuxeo-Component: OSGI-INF/connectorbased-directory-framework.xml,OSGI-
+ INF/miscDirectoryConnectorsContrib.xml,OSGI-INF/oauth2CustomContrib.x
+ ml,OSGI-INF/suggestDirectoryEntriesContrib.xml
+Eclipse-LazyStart: true
+
