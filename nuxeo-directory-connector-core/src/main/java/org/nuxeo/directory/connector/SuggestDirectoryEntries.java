@@ -386,7 +386,7 @@ public class SuggestDirectoryEntries {
      * @since 8.2
      */
     @Param(name = "limit", required = false)
-    protected int limit = -1;
+    protected int limit = 100;
 
     /**
      * Fetch mode. If not contains, then starts with.
