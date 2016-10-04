@@ -11,15 +11,15 @@
       class="org.nuxeo.directory.connector.json.salesforce.SalesforceInMemoryConnector">
       <idField>Id</idField>
       <schema>vocabulary</schema>
-      <cacheTimeout>0</cacheTimeout>
       <parameters>
         <parameter name="url">/services/data/v20.0/query/?q=SELECT+Id,Name+from+Account</parameter>
         <parameter name="label">Name</parameter>
         <parameter name="id">Id</parameter>
+        <parameter name="autoRefresh">true</parameter>
       </parameters>
       <mapping>
-      	<map field="id">Id</map>
-      	<map field="label">Name</map>
+       <map field="label">Name</map>
+       <map field="id">Id</map>
       </mapping>
     </directory>  
   </extension>
