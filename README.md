@@ -1,7 +1,7 @@
 # nuxeo-salesforce-connector
 
 <img src="screenshot.png"/>
-Using the REST API of Salesforce based on Force.com, the idea is to display a list of items coming from Salesforce in a nuxeo dropdown list.
+Using the REST API of Salesforce based on Force.com, the idea is to display a list of items coming from Salesforce in a Nuxeo dropdown list.
 ## Important Note
 
 **These features are not part of the Nuxeo Production platform.**
