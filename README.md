@@ -1,6 +1,6 @@
 # nuxeo-salesforce-connector
 
-<img src="screenshot1.png" width="450px" style="vertical-align: top"/><img src="screenshot2.png" width="400px" style="vertical-align: top"/> 
+<img src="screenshot.png"/>
 Using the REST API of Salesforce based on Force.com, the idea is to display a list of items coming from Salesforce in a nuxeo dropdown list.
 ## Important Note
 
